@@ -18,6 +18,8 @@ struct Advent2024: ParsableCommand {
             Optional.some(Day1())
         case 2:
             Optional.some(Day2())
+        case 3:
+            Optional.some(Day3())
         default:
             Optional.none
         }
