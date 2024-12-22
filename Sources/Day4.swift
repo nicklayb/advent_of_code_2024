@@ -13,19 +13,57 @@ struct Coordinate : Hashable {
     }
 
     public func up(increment: Int) -> Coordinate {
-        down(increment: -increment)
+        return down(increment: -increment)
     }
 
     public func down(increment: Int) -> Coordinate {
-        Coordinate(row: row, column: column + 1)
+        return Coordinate(row: row, column: column + increment)
     }
 
     public func right(increment: Int) -> Coordinate {
-        left(increment: -increment)
+        return left(increment: -increment)
     }
 
     public func left(increment: Int) -> Coordinate {
-        Coordinate(row: row + 1, column: column)
+        return Coordinate(row: row + increment, column: column)
+    }
+
+    public func diagonalDownLeft(increment: Int) -> Coordinate {
+        return down(increment: increment).left(increment: increment)
+    }
+
+    public func diagonalDownRight(increment: Int) -> Coordinate {
+        return right(increment: increment).down(increment: increment)
+    }
+
+    public func diagonalUpLeft(increment: Int) -> Coordinate {
+        return up(increment: increment).left(increment: increment)
+    }
+
+    public func diagonalUpRight(increment: Int) -> Coordinate {
+        return right(increment: increment).up(increment: increment)
+    }
+
+    private func stepped(length: Int, function: (Coordinate, Int) -> Coordinate) -> [Coordinate] {
+        var stepped: [Coordinate] = []
+
+        for index in stride(from: 1, to: (length + 1), by: 1) {
+            stepped.append(function(self, index))
+        }
+        return stepped
+    }
+
+    public func surroundingPatterns() -> [[Coordinate]] {
+        return [
+            stepped(length: 3, function: { $0.left(increment: $1) }),
+            stepped(length: 3, function: { $0.diagonalUpLeft(increment: $1) }),
+            stepped(length: 3, function: { $0.up(increment: $1) }),
+            stepped(length: 3, function: { $0.diagonalUpRight(increment: $1) }),
+            stepped(length: 3, function: { $0.right(increment: $1) }),
+            stepped(length: 3, function: { $0.diagonalDownRight(increment: $1) }),
+            stepped(length: 3, function: { $0.down(increment: $1) }),
+            stepped(length: 3, function: { $0.diagonalDownLeft(increment: $1) })
+        ]
     }
 }
 
@@ -87,6 +125,23 @@ class Grid {
     public func size() -> (Int, Int) {
         return (width, height)
     }
+
+    public func lookAround(coord: Coordinate) -> Int {
+        return coord.surroundingPatterns().reduce(0, {total, coords in 
+            if coords.allSatisfy({coord in inBounds(coordinate: coord)}) {
+                let surrounding = coords.map({coord in 
+                    return grid[coord]
+                })
+
+                return switch surrounding {
+                case [Letter.m, Letter.a, Letter.s]: total + 1
+                default: total
+                }
+            } else {
+                return total
+            }
+        })
+    }
 }
 
 class Day4 : Day {
@@ -96,11 +151,15 @@ class Day4 : Day {
 
     private func part1(inputFile: String) -> String {
         let grid = Grid(input: inputFile)
-        grid.reduce(initialAccumulator: 0, function: {acc, coord, letter in
-            print("\(coord) -> \(letter)")
-            return acc
+        let result = grid.reduce(initialAccumulator: 0, function: {acc, coord, letter in
+            let count = switch letter {
+            case .x: grid.lookAround(coord: coord)
+            default: 0
+            }
+
+            return acc + count
         })
-        return String("Failed part 1")
+        return String(result)
     }
 
     public func run(part: Int, inputFile: String) -> String {
