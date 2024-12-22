@@ -13,13 +13,15 @@ struct Advent2024: ParsableCommand {
     public var inputFile: String
 
     private func getDayClass() -> Optional<Day> {
-        switch day {
+        return switch day {
         case 1:
             Optional.some(Day1())
         case 2:
             Optional.some(Day2())
         case 3:
             Optional.some(Day3())
+        case 4:
+            Optional.some(Day4())
         default:
             Optional.none
         }
