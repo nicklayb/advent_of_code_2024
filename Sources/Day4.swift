@@ -53,16 +53,25 @@ struct Coordinate : Hashable {
         return stepped
     }
 
-    public func surroundingPatterns() -> [[Coordinate]] {
+    public func surroundingPatterns(count: Int) -> [[Coordinate]] {
         return [
-            stepped(length: 3, function: { $0.left(increment: $1) }),
-            stepped(length: 3, function: { $0.diagonalUpLeft(increment: $1) }),
-            stepped(length: 3, function: { $0.up(increment: $1) }),
-            stepped(length: 3, function: { $0.diagonalUpRight(increment: $1) }),
-            stepped(length: 3, function: { $0.right(increment: $1) }),
-            stepped(length: 3, function: { $0.diagonalDownRight(increment: $1) }),
-            stepped(length: 3, function: { $0.down(increment: $1) }),
-            stepped(length: 3, function: { $0.diagonalDownLeft(increment: $1) })
+            stepped(length: count, function: { $0.left(increment: $1) }),
+            stepped(length: count, function: { $0.diagonalUpLeft(increment: $1) }),
+            stepped(length: count, function: { $0.up(increment: $1) }),
+            stepped(length: count, function: { $0.diagonalUpRight(increment: $1) }),
+            stepped(length: count, function: { $0.right(increment: $1) }),
+            stepped(length: count, function: { $0.diagonalDownRight(increment: $1) }),
+            stepped(length: count, function: { $0.down(increment: $1) }),
+            stepped(length: count, function: { $0.diagonalDownLeft(increment: $1) })
+        ]
+    }
+
+    public func diagonals(count: Int) -> [[Coordinate]] {
+        return [
+            [diagonalUpLeft(increment: count), diagonalDownRight(increment: count)],
+            [diagonalUpRight(increment: count), diagonalDownLeft(increment: count)],
+            [diagonalDownRight(increment: count), diagonalUpLeft(increment: count)],
+            [diagonalDownLeft(increment: count), diagonalUpRight(increment: count)],
         ]
     }
 }
@@ -127,7 +136,7 @@ class Grid {
     }
 
     public func lookAround(coord: Coordinate) -> Int {
-        return coord.surroundingPatterns().reduce(0, {total, coords in 
+        return coord.surroundingPatterns(count: 3).reduce(0, {total, coords in 
             if coords.allSatisfy({coord in inBounds(coordinate: coord)}) {
                 let surrounding = coords.map({coord in 
                     return grid[coord]
@@ -142,11 +151,42 @@ class Grid {
             }
         })
     }
+
+    public func lookDiagonal(coord: Coordinate) -> Int {
+        let diagonals = coord.diagonals(count: 1).reduce(0, {total, coords in 
+            if coords.allSatisfy({coord in inBounds(coordinate: coord)}) {
+                let surrounding = coords.map({coord in 
+                    return grid[coord]
+                })
+
+                return switch surrounding {
+                case [Letter.m, Letter.s]: total + 1
+                default: total
+                }
+            } else {
+                return total
+            }
+        })
+
+        if diagonals == 2 {
+            return 1
+        }
+        return 0
+    }
 }
 
 class Day4 : Day {
     private func part2(inputFile: String) -> String {
-        return String("Failed part 2")
+        let grid = Grid(input: inputFile)
+        let result = grid.reduce(initialAccumulator: 0, function: {acc, coord, letter in
+            let count = switch letter {
+            case .a: grid.lookDiagonal(coord: coord)
+            default: 0
+            }
+
+            return acc + count
+        })
+        return String(result)
     }
 
     private func part1(inputFile: String) -> String {
