@@ -231,7 +231,7 @@ class Map : CustomStringConvertible {
 
 class Day6 : Day {
     private func part2(inputFile: String) -> String {
-        return String("Fix me")
+        return String("Not interested")
     }
 
     private func part1(inputFile: String) -> String {
