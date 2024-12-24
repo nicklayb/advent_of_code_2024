@@ -1,4 +1,4 @@
-struct Coordinate : Hashable {
+struct Day4Coordinate : Hashable {
     public var row: Int
     public var column: Int
 
@@ -12,40 +12,40 @@ struct Coordinate : Hashable {
         return hasher.combine(identifier)
     }
 
-    public func up(increment: Int) -> Coordinate {
+    public func up(increment: Int) -> Day4Coordinate {
         return down(increment: -increment)
     }
 
-    public func down(increment: Int) -> Coordinate {
-        return Coordinate(row: row, column: column + increment)
+    public func down(increment: Int) -> Day4Coordinate {
+        return Day4Coordinate(row: row, column: column + increment)
     }
 
-    public func right(increment: Int) -> Coordinate {
+    public func right(increment: Int) -> Day4Coordinate {
         return left(increment: -increment)
     }
 
-    public func left(increment: Int) -> Coordinate {
-        return Coordinate(row: row + increment, column: column)
+    public func left(increment: Int) -> Day4Coordinate {
+        return Day4Coordinate(row: row + increment, column: column)
     }
 
-    public func diagonalDownLeft(increment: Int) -> Coordinate {
+    public func diagonalDownLeft(increment: Int) -> Day4Coordinate {
         return down(increment: increment).left(increment: increment)
     }
 
-    public func diagonalDownRight(increment: Int) -> Coordinate {
+    public func diagonalDownRight(increment: Int) -> Day4Coordinate {
         return right(increment: increment).down(increment: increment)
     }
 
-    public func diagonalUpLeft(increment: Int) -> Coordinate {
+    public func diagonalUpLeft(increment: Int) -> Day4Coordinate {
         return up(increment: increment).left(increment: increment)
     }
 
-    public func diagonalUpRight(increment: Int) -> Coordinate {
+    public func diagonalUpRight(increment: Int) -> Day4Coordinate {
         return right(increment: increment).up(increment: increment)
     }
 
-    private func stepped(length: Int, function: (Coordinate, Int) -> Coordinate) -> [Coordinate] {
-        var stepped: [Coordinate] = []
+    private func stepped(length: Int, function: (Day4Coordinate, Int) -> Day4Coordinate) -> [Day4Coordinate] {
+        var stepped: [Day4Coordinate] = []
 
         for index in stride(from: 1, to: (length + 1), by: 1) {
             stepped.append(function(self, index))
@@ -53,7 +53,7 @@ struct Coordinate : Hashable {
         return stepped
     }
 
-    public func surroundingPatterns(count: Int) -> [[Coordinate]] {
+    public func surroundingPatterns(count: Int) -> [[Day4Coordinate]] {
         return [
             stepped(length: count, function: { $0.left(increment: $1) }),
             stepped(length: count, function: { $0.diagonalUpLeft(increment: $1) }),
@@ -66,7 +66,7 @@ struct Coordinate : Hashable {
         ]
     }
 
-    public func diagonals(count: Int) -> [[Coordinate]] {
+    public func diagonals(count: Int) -> [[Day4Coordinate]] {
         return [
             [diagonalUpLeft(increment: count), diagonalDownRight(increment: count)],
             [diagonalUpRight(increment: count), diagonalDownLeft(increment: count)],
@@ -76,14 +76,14 @@ struct Coordinate : Hashable {
     }
 }
 
-enum Letter {
+enum Day4Letter {
     case x
     case m
     case a
     case s
     case invalid
 
-    static func fromChar(char: String) -> Letter {
+    static func fromChar(char: String) -> Day4Letter {
         return switch char {
         case "X": self.x
         case "M": self.m
@@ -94,8 +94,8 @@ enum Letter {
     }
 }
 
-class Grid {
-    private var grid : Dictionary<Coordinate, Letter> = Dictionary()
+class Day4Grid {
+    private var grid : Dictionary<Day4Coordinate, Day4Letter> = Dictionary()
     private var width : Int = -1
     private var height : Int = -1
 
@@ -104,8 +104,8 @@ class Grid {
 
         for (rowIndex, fullRow) in splitted.enumerated() {
             for (columnIndex, cell) in fullRow.enumerated() {
-                let coordinate = Coordinate(row: rowIndex, column: columnIndex)
-                let letter: Letter = Letter.fromChar(char: String(cell))
+                let coordinate = Day4Coordinate(row: rowIndex, column: columnIndex)
+                let letter: Day4Letter = Day4Letter.fromChar(char: String(cell))
                 grid.updateValue(letter, forKey: coordinate)
                 width = columnIndex + 1
             }
@@ -113,16 +113,16 @@ class Grid {
         }
     }
 
-    public func inBounds(coordinate: Coordinate) -> Bool {
+    public func inBounds(coordinate: Day4Coordinate) -> Bool {
         return (coordinate.row >= 0 && coordinate.row < height) && (coordinate.column >= 0 && coordinate.column < width)
     }
 
-    public func reduce<T>(initialAccumulator: T, function: (T, Coordinate, Letter) -> T) -> T {
+    public func reduce<T>(initialAccumulator: T, function: (T, Day4Coordinate, Day4Letter) -> T) -> T {
         var accumulator = initialAccumulator
         
         for rowIndex in stride(from: 0, to: height, by: 1) {
             for columnIndex in stride(from: 0, to: width, by: 1) {
-                let coordinate = Coordinate(row: rowIndex, column: columnIndex)
+                let coordinate = Day4Coordinate(row: rowIndex, column: columnIndex)
 
                 accumulator = function(accumulator, coordinate, grid[coordinate]!)
             }
@@ -135,7 +135,7 @@ class Grid {
         return (width, height)
     }
 
-    public func lookAround(coord: Coordinate) -> Int {
+    public func lookAround(coord: Day4Coordinate) -> Int {
         return coord.surroundingPatterns(count: 3).reduce(0, {total, coords in 
             if coords.allSatisfy({coord in inBounds(coordinate: coord)}) {
                 let surrounding = coords.map({coord in 
@@ -143,7 +143,7 @@ class Grid {
                 })
 
                 return switch surrounding {
-                case [Letter.m, Letter.a, Letter.s]: total + 1
+                case [Day4Letter.m, Day4Letter.a, Day4Letter.s]: total + 1
                 default: total
                 }
             } else {
@@ -152,7 +152,7 @@ class Grid {
         })
     }
 
-    public func lookDiagonal(coord: Coordinate) -> Int {
+    public func lookDiagonal(coord: Day4Coordinate) -> Int {
         let diagonals = coord.diagonals(count: 1).reduce(0, {total, coords in 
             if coords.allSatisfy({coord in inBounds(coordinate: coord)}) {
                 let surrounding = coords.map({coord in 
@@ -160,7 +160,7 @@ class Grid {
                 })
 
                 return switch surrounding {
-                case [Letter.m, Letter.s]: total + 1
+                case [Day4Letter.m, Day4Letter.s]: total + 1
                 default: total
                 }
             } else {
@@ -177,7 +177,7 @@ class Grid {
 
 class Day4 : Day {
     private func part2(inputFile: String) -> String {
-        let grid = Grid(input: inputFile)
+        let grid = Day4Grid(input: inputFile)
         let result = grid.reduce(initialAccumulator: 0, function: {acc, coord, letter in
             let count = switch letter {
             case .a: grid.lookDiagonal(coord: coord)
@@ -190,7 +190,7 @@ class Day4 : Day {
     }
 
     private func part1(inputFile: String) -> String {
-        let grid = Grid(input: inputFile)
+        let grid = Day4Grid(input: inputFile)
         let result = grid.reduce(initialAccumulator: 0, function: {acc, coord, letter in
             let count = switch letter {
             case .x: grid.lookAround(coord: coord)
