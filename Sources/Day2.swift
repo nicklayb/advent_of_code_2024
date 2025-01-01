@@ -1,16 +1,5 @@
-enum Status {
-    case valid
-    case invalid
-}
-
-enum Direction {
-    case ascending(Int)
-    case descending(Int)
-    case overflow
-}
-
-extension Direction: Equatable {
-    static func ==(left: Direction, right: Direction) -> Bool {
+extension Day2.Direction: Equatable {
+    static func ==(left: Day2.Direction, right: Day2.Direction) -> Bool {
         switch (left, right) {
         case (.overflow, .overflow): return true
         case (.ascending(_), .ascending(_)): return true
@@ -21,6 +10,16 @@ extension Direction: Equatable {
 }
 
 class Day2 : Day {
+    enum Status {
+        case valid
+        case invalid
+    }
+
+    enum Direction {
+        case ascending(Int)
+        case descending(Int)
+        case overflow
+    }
     private var attemptCorrection = false
     private func part2(inputFile: String) -> String {
         attemptCorrection = true
